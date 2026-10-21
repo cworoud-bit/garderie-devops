@@ -58,12 +58,22 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials',
                                                   usernameVariable: 'DH_USER',
                                                   passwordVariable: 'DH_PASS')]) {
-                    sh '''
+                                        sh '''
                         echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
+
+                        push_retry() {
+                          for i in 1 2 3 4 5; do
+                            docker push "$1" && return 0
+                            echo "Tentative $i échouée, nouvel essai dans 15s..."
+                            sleep 15
+                          done
+                          return 1
+                        }
+
                         docker tag ${BACK_IMAGE}:${TAG} $DH_USER/${BACK_IMAGE}:${TAG}
                         docker tag ${BACK_IMAGE}:${TAG} $DH_USER/${BACK_IMAGE}:latest
-                        docker push $DH_USER/${BACK_IMAGE}:${TAG}
-                        docker push $DH_USER/${BACK_IMAGE}:latest
+                        push_retry $DH_USER/${BACK_IMAGE}:${TAG}
+                        push_retry $DH_USER/${BACK_IMAGE}:latest
                     '''
                 }
             }
