@@ -1,4 +1,12 @@
 ---
+- name: Configurer apt (IPv4 forcé, retries, timeouts)
+  copy:
+    dest: /etc/apt/apt.conf.d/99-network
+    content: |
+      Acquire::ForceIPv4 "true";
+      Acquire::Retries "5";
+      Acquire::https::Timeout "60";
+
 - name: Installer les prérequis
   ansible.builtin.apt:
     name: [ca-certificates, curl, gnupg]
@@ -41,3 +49,8 @@
     name: "{{ docker_user }}"
     groups: docker
     append: true
+
+  register: docker_install
+  until: docker_install is succeeded
+  retries: 5
+  delay: 15
