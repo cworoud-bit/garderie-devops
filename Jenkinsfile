@@ -1,8 +1,6 @@
 pipeline {
     agent any
 
-    // Nécessite le plugin "NodeJS" et un outil nommé "node20" (Manage Jenkins > Tools)
-    tools { nodejs 'node20' }
 
     environment {
         FRONT_IMAGE = 'garderie-frontend'
